@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EdTech Skills Assessment | Discover Your Teaching Superpowers</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="app-container">
+        <!-- Header -->
+        <header class="header">
+            <div class="logo">
+                <span class="logo-icon">🎯</span>
+                <span class="logo-text">EdTech Skills</span>
+            </div>
+            <p class="tagline">Discover your strengths and unlock new possibilities</p>
+        </header>
+
+        <!-- Progress Bar -->
+        <div class="progress-container" id="progressContainer">
+            <div class="progress-bar">
+                <div class="progress-fill" id="progressFill"></div>
+            </div>
+            <span class="progress-text" id="progressText">Getting Started</span>
+        </div>
+
+        <!-- Main Content Area -->
+        <main class="main-content" id="mainContent">
+            <!-- Welcome Screen -->
+            <section class="screen active" id="welcomeScreen">
+                <div class="welcome-card">
+                    <h1>Welcome, Educator!</h1>
+                    <p class="welcome-intro">
+                        This quick assessment will help identify your strengths in educational technology
+                        and suggest personalized ways to grow your skills.
+                    </p>
+                    <div class="features-preview">
+                        <div class="feature">
+                            <span class="feature-icon">⏱️</span>
+                            <span>5 minutes</span>
+                        </div>
+                        <div class="feature">
+                            <span class="feature-icon">📊</span>
+                            <span>6 skill areas</span>
+                        </div>
+                        <div class="feature">
+                            <span class="feature-icon">💡</span>
+                            <span>Personalized tips</span>
+                        </div>
+                    </div>
+                    <button class="btn btn-primary btn-large" onclick="startAssessment()">
+                        Begin Assessment
+                        <span class="btn-arrow">→</span>
+                    </button>
+                </div>
+            </section>
+
+            <!-- Assessment Screen -->
+            <section class="screen" id="assessmentScreen">
+                <div class="assessment-card">
+                    <div class="category-header">
+                        <span class="category-icon" id="categoryIcon">📚</span>
+                        <div class="category-info">
+                            <span class="category-number" id="categoryNumber">Category 1 of 6</span>
+                            <h2 class="category-title" id="categoryTitle">Loading...</h2>
+                        </div>
+                    </div>
+
+                    <p class="category-description" id="categoryDescription">
+                        Loading description...
+                    </p>
+
+                    <div class="skills-list" id="skillsList">
+                        <!-- Skills will be dynamically inserted here -->
+                    </div>
+
+                    <div class="assessment-nav">
+                        <button class="btn btn-secondary" id="prevBtn" onclick="previousCategory()">
+                            <span class="btn-arrow">←</span> Previous
+                        </button>
+                        <button class="btn btn-primary" id="nextBtn" onclick="nextCategory()">
+                            Next <span class="btn-arrow">→</span>
+                        </button>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Results Screen -->
+            <section class="screen" id="resultsScreen">
+                <div class="results-container">
+                    <div class="results-header">
+                        <h1>Your EdTech Profile</h1>
+                        <p>Based on your responses, here's your personalized skills snapshot</p>
+                    </div>
+
+                    <div class="results-summary" id="resultsSummary">
+                        <!-- Summary cards will be dynamically inserted -->
+                    </div>
+
+                    <div class="recommendations-section">
+                        <h2>🚀 Recommended Next Steps</h2>
+                        <div class="recommendations-grid" id="recommendationsGrid">
+                            <!-- Recommendations will be dynamically inserted -->
+                        </div>
+                    </div>
+
+                    <div class="try-it-section">
+                        <h2>💪 Try It This Week</h2>
+                        <div class="try-it-cards" id="tryItCards">
+                            <!-- Try-it activities will be dynamically inserted -->
+                        </div>
+                    </div>
+
+                    <div class="results-actions">
+                        <button class="btn btn-secondary" onclick="restartAssessment()">
+                            Retake Assessment
+                        </button>
+                        <button class="btn btn-primary" onclick="downloadResults()">
+                            Download My Profile
+                        </button>
+                    </div>
+                </div>
+            </section>
+        </main>
+
+        <!-- Footer -->
+        <footer class="footer">
+            <p>Empowering educators to embrace technology with confidence</p>
+        </footer>
+    </div>
+
+    <script src="data.js"></script>
+    <script src="app.js"></script>
+</body>
+</html>
