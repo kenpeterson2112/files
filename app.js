@@ -86,11 +86,13 @@ function startAssessment() {
  * Render the current category
  */
 function renderCategory() {
-    const category = SKILL_CATEGORIES[state.currentCategoryIndex];
+    const category = ASSESSMENT_CONTENT.categories[state.currentCategoryIndex];
+    const levels = ASSESSMENT_CONTENT.levels;
+    const totalCategories = ASSESSMENT_CONTENT.categories.length;
 
     // Update header
     elements.categoryIcon.textContent = category.icon;
-    elements.categoryNumber.textContent = `Category ${state.currentCategoryIndex + 1} of ${SKILL_CATEGORIES.length}`;
+    elements.categoryNumber.textContent = `Category ${state.currentCategoryIndex + 1} of ${totalCategories}`;
     elements.categoryTitle.textContent = category.title;
     elements.categoryDescription.textContent = category.description;
 
@@ -100,7 +102,7 @@ function renderCategory() {
             <div class="skill-name">${skill.name}</div>
             <div class="skill-example">${skill.example}</div>
             <div class="skill-levels">
-                ${SKILL_LEVELS.map(level => `
+                ${levels.map(level => `
                     <div class="skill-level">
                         <input
                             type="radio"
@@ -123,7 +125,7 @@ function renderCategory() {
 
     // Update navigation buttons
     elements.prevBtn.classList.toggle('visible', state.currentCategoryIndex > 0);
-    elements.nextBtn.textContent = state.currentCategoryIndex === SKILL_CATEGORIES.length - 1
+    elements.nextBtn.textContent = state.currentCategoryIndex === totalCategories - 1
         ? 'See Results →'
         : 'Next →';
 }
@@ -141,7 +143,7 @@ function handleSkillChange(skillId, levelId) {
  * Update progress bar
  */
 function updateProgress() {
-    const totalSkills = SKILL_CATEGORIES.reduce((sum, cat) => sum + cat.skills.length, 0);
+    const totalSkills = ASSESSMENT_CONTENT.categories.reduce((sum, cat) => sum + cat.skills.length, 0);
     const answeredSkills = Object.keys(state.responses).length;
     const percentage = Math.round((answeredSkills / totalSkills) * 100);
 
@@ -165,7 +167,7 @@ function previousCategory() {
  */
 function nextCategory() {
     // Check if current category has all skills rated
-    const category = SKILL_CATEGORIES[state.currentCategoryIndex];
+    const category = ASSESSMENT_CONTENT.categories[state.currentCategoryIndex];
     const unanswered = category.skills.filter(skill => !state.responses[skill.id]);
 
     if (unanswered.length > 0) {
@@ -181,7 +183,7 @@ function nextCategory() {
         return;
     }
 
-    if (state.currentCategoryIndex < SKILL_CATEGORIES.length - 1) {
+    if (state.currentCategoryIndex < ASSESSMENT_CONTENT.categories.length - 1) {
         state.currentCategoryIndex++;
         renderCategory();
         window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -194,7 +196,7 @@ function nextCategory() {
  * Calculate category average score
  */
 function getCategoryScore(categoryId) {
-    const category = SKILL_CATEGORIES.find(c => c.id === categoryId);
+    const category = ASSESSMENT_CONTENT.categories.find(c => c.id === categoryId);
     if (!category) return 0;
 
     const scores = category.skills.map(skill => state.responses[skill.id] || 0);
@@ -214,10 +216,13 @@ function showResults() {
  * Render results
  */
 function renderResults() {
+    const categories = ASSESSMENT_CONTENT.categories;
+    const levelNames = ASSESSMENT_CONTENT.levelNames;
+
     // Render summary cards
-    elements.resultsSummary.innerHTML = SKILL_CATEGORIES.map(category => {
+    elements.resultsSummary.innerHTML = categories.map(category => {
         const score = getCategoryScore(category.id);
-        const levelName = LEVEL_NAMES[score] || 'Not Rated';
+        const levelName = levelNames[score] || 'Not Rated';
 
         return `
             <div class="summary-card level-${score}">
@@ -232,7 +237,7 @@ function renderResults() {
     }).join('');
 
     // Find areas for growth (lowest scores) and strengths (highest scores)
-    const categoryScores = SKILL_CATEGORIES.map(cat => ({
+    const categoryScores = categories.map(cat => ({
         category: cat,
         score: getCategoryScore(cat.id)
     })).sort((a, b) => a.score - b.score);
@@ -249,7 +254,7 @@ function renderResults() {
 
     // Render recommendations
     elements.recommendationsGrid.innerHTML = recommendationAreas.map(({ category, score }) => {
-        const rec = RECOMMENDATIONS[category.id][score] || RECOMMENDATIONS[category.id][1];
+        const rec = category.recommendations[score] || category.recommendations[1];
         return `
             <div class="recommendation-card">
                 <h3>${category.icon} ${category.title}</h3>
@@ -261,7 +266,7 @@ function renderResults() {
 
     // Render try-it activities
     elements.tryItCards.innerHTML = recommendationAreas.map(({ category, score }) => {
-        const rec = RECOMMENDATIONS[category.id][score] || RECOMMENDATIONS[category.id][1];
+        const rec = category.recommendations[score] || category.recommendations[1];
         const tryIt = rec.tryIt;
         return `
             <div class="try-it-card">
@@ -290,6 +295,9 @@ function restartAssessment() {
  * Download results as a simple text summary
  */
 function downloadResults() {
+    const categories = ASSESSMENT_CONTENT.categories;
+    const levelNames = ASSESSMENT_CONTENT.levelNames;
+
     const lines = [
         '═══════════════════════════════════════════',
         '       EdTech Skills Assessment Results',
@@ -301,9 +309,9 @@ function downloadResults() {
         ''
     ];
 
-    SKILL_CATEGORIES.forEach(category => {
+    categories.forEach(category => {
         const score = getCategoryScore(category.id);
-        const levelName = LEVEL_NAMES[score] || 'Not Rated';
+        const levelName = levelNames[score] || 'Not Rated';
         const bar = '█'.repeat(score) + '░'.repeat(4 - score);
         lines.push(`${category.icon} ${category.title}`);
         lines.push(`   ${bar} ${levelName}`);
@@ -313,13 +321,13 @@ function downloadResults() {
     lines.push('── Recommended Focus Areas ──');
     lines.push('');
 
-    const categoryScores = SKILL_CATEGORIES.map(cat => ({
+    const categoryScores = categories.map(cat => ({
         category: cat,
         score: getCategoryScore(cat.id)
     })).sort((a, b) => a.score - b.score);
 
     categoryScores.slice(0, 3).forEach(({ category, score }) => {
-        const rec = RECOMMENDATIONS[category.id][score] || RECOMMENDATIONS[category.id][1];
+        const rec = category.recommendations[score] || category.recommendations[1];
         lines.push(`• ${category.title}: ${rec.title}`);
         lines.push(`  ${rec.description}`);
         lines.push('');
@@ -329,7 +337,7 @@ function downloadResults() {
     lines.push('');
 
     categoryScores.slice(0, 3).forEach(({ category, score }) => {
-        const rec = RECOMMENDATIONS[category.id][score] || RECOMMENDATIONS[category.id][1];
+        const rec = category.recommendations[score] || category.recommendations[1];
         const tryIt = rec.tryIt;
         lines.push(`□ ${tryIt.title} (${tryIt.difficulty})`);
         lines.push(`  ${tryIt.description}`);
