@@ -23,6 +23,7 @@ const elements = {
     categoryTitle: document.getElementById('categoryTitle'),
     categoryDescription: document.getElementById('categoryDescription'),
     skillsList: document.getElementById('skillsList'),
+    stepIndicator: document.getElementById('stepIndicator'),
     prevBtn: document.getElementById('prevBtn'),
     nextBtn: document.getElementById('nextBtn'),
     resultsSummary: document.getElementById('resultsSummary'),
@@ -52,24 +53,40 @@ function saveState() {
 }
 
 /**
- * Switch between screens
+ * Switch between screens with smooth fade transition
  */
 function showScreen(screenName) {
-    // Hide all screens
-    elements.welcomeScreen.classList.remove('active');
-    elements.assessmentScreen.classList.remove('active');
-    elements.resultsScreen.classList.remove('active');
+    const allScreens = [elements.welcomeScreen, elements.assessmentScreen, elements.resultsScreen];
+    const targetScreen = document.getElementById(`${screenName}Screen`);
 
-    // Show requested screen
-    const screenElement = document.getElementById(`${screenName}Screen`);
-    if (screenElement) {
-        screenElement.classList.add('active');
-    }
+    // Add fade-out class to currently active screen
+    allScreens.forEach(screen => {
+        if (screen.classList.contains('active')) {
+            screen.classList.add('fade-out');
+        }
+    });
 
-    // Update progress bar visibility
-    elements.progressContainer.classList.toggle('visible', screenName === 'assessment');
+    // After fade-out, switch screens
+    setTimeout(() => {
+        // Hide all screens
+        allScreens.forEach(screen => {
+            screen.classList.remove('active', 'fade-out');
+        });
 
-    state.currentScreen = screenName;
+        // Show requested screen with fade-in
+        if (targetScreen) {
+            targetScreen.classList.add('active', 'fade-in');
+            // Remove fade-in class after animation completes
+            setTimeout(() => {
+                targetScreen.classList.remove('fade-in');
+            }, 300);
+        }
+
+        // Update progress bar visibility
+        elements.progressContainer.classList.toggle('visible', screenName === 'assessment');
+
+        state.currentScreen = screenName;
+    }, 200);
 }
 
 /**
@@ -80,6 +97,24 @@ function startAssessment() {
     showScreen('assessment');
     renderCategory();
     updateProgress();
+}
+
+/**
+ * Render the step indicator dots
+ */
+function renderStepIndicator() {
+    const totalCategories = ASSESSMENT_CONTENT.categories.length;
+    const currentIndex = state.currentCategoryIndex;
+
+    elements.stepIndicator.innerHTML = ASSESSMENT_CONTENT.categories.map((cat, index) => {
+        let stepClass = 'step-dot';
+        if (index < currentIndex) {
+            stepClass += ' completed';
+        } else if (index === currentIndex) {
+            stepClass += ' active';
+        }
+        return `<span class="${stepClass}" title="${cat.title}"></span>`;
+    }).join('');
 }
 
 /**
@@ -95,6 +130,9 @@ function renderCategory() {
     elements.categoryNumber.textContent = `Category ${state.currentCategoryIndex + 1} of ${totalCategories}`;
     elements.categoryTitle.textContent = category.title;
     elements.categoryDescription.textContent = category.description;
+
+    // Render step indicator
+    renderStepIndicator();
 
     // Render skills
     elements.skillsList.innerHTML = category.skills.map(skill => `
@@ -205,6 +243,35 @@ function getCategoryScore(categoryId) {
 }
 
 /**
+ * Parse difficulty string and return appropriate tag
+ * "Quick Win" for < 15 minutes, "Deep Dive" for >= 15 minutes
+ */
+function getDifficultyTag(difficultyStr) {
+    // Extract minutes from strings like "5 minutes", "15 minutes", "10 minutes"
+    const minuteMatch = difficultyStr.match(/(\d+)\s*minute/i);
+
+    if (minuteMatch) {
+        const minutes = parseInt(minuteMatch[1], 10);
+        if (minutes < 15) {
+            return { label: 'Quick Win', class: 'tag-quick' };
+        } else {
+            return { label: 'Deep Dive', class: 'tag-deep' };
+        }
+    }
+
+    // For non-minute based difficulties (like "Planning time", "One activity", "One class period")
+    // These typically take longer, so mark as Deep Dive
+    const quickTerms = ['quick', 'fast', 'brief'];
+    const isQuick = quickTerms.some(term => difficultyStr.toLowerCase().includes(term));
+
+    if (isQuick) {
+        return { label: 'Quick Win', class: 'tag-quick' };
+    }
+
+    return { label: 'Deep Dive', class: 'tag-deep' };
+}
+
+/**
  * Show the results screen
  */
 function showResults() {
@@ -268,13 +335,17 @@ function renderResults() {
     elements.tryItCards.innerHTML = recommendationAreas.map(({ category, score }) => {
         const rec = category.recommendations[score] || category.recommendations[1];
         const tryIt = rec.tryIt;
+        const difficultyTag = getDifficultyTag(tryIt.difficulty);
         return `
             <div class="try-it-card">
                 <div class="try-it-icon">${tryIt.icon}</div>
                 <div class="try-it-content">
                     <h4>${tryIt.title}</h4>
                     <p>${tryIt.description}</p>
-                    <div class="try-it-difficulty">⏱️ ${tryIt.difficulty}</div>
+                    <div class="try-it-meta">
+                        <span class="try-it-time">⏱️ ${tryIt.difficulty}</span>
+                        <span class="try-it-tag ${difficultyTag.class}">${difficultyTag.label}</span>
+                    </div>
                 </div>
             </div>
         `;
