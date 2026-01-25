@@ -1,6 +1,6 @@
 /* ===================================
    EdTech Skills Assessment Styles
-   Modern, Clean, Accessible Design
+   Modern Dashboard Design
    =================================== */
 
 /* CSS Variables for theming */
@@ -26,6 +26,7 @@
     --radius-lg: 1rem;
     --radius-xl: 1.5rem;
     --transition: all 0.2s ease;
+    --container-max-width: 900px;
 }
 
 /* Reset & Base */
@@ -48,9 +49,9 @@ body {
     line-height: 1.6;
 }
 
-/* App Container */
+/* App Container - Full viewport flex layout */
 .app-container {
-    max-width: 800px;
+    max-width: var(--container-max-width);
     margin: 0 auto;
     padding: 1.5rem;
     min-height: 100vh;
@@ -63,6 +64,7 @@ body {
     text-align: center;
     padding: 1.5rem 0;
     color: white;
+    flex-shrink: 0;
 }
 
 .logo {
@@ -96,6 +98,7 @@ body {
     margin-bottom: 1.5rem;
     backdrop-filter: blur(10px);
     display: none;
+    flex-shrink: 0;
 }
 
 .progress-container.visible {
@@ -126,21 +129,25 @@ body {
     font-weight: 500;
 }
 
-/* Main Content */
+/* Main Content - Dashboard Panel */
 .main-content {
     flex: 1;
     display: flex;
-    align-items: flex-start;
+    flex-direction: column;
+    min-height: 500px; /* Prevents footer jumping when content changes */
 }
 
+/* Screen containers */
 .screen {
     display: none;
     width: 100%;
     animation: fadeIn 0.3s ease;
+    flex: 1;
 }
 
 .screen.active {
-    display: block;
+    display: flex;
+    flex-direction: column;
 }
 
 @keyframes fadeIn {
@@ -148,13 +155,23 @@ body {
     to { opacity: 1; transform: translateY(0); }
 }
 
-/* Welcome Card */
-.welcome-card {
+/* Dashboard Panel - Shared wrapper for all screens */
+.welcome-card,
+.assessment-card,
+.results-container {
     background: var(--surface);
     border-radius: var(--radius-xl);
-    padding: 3rem 2rem;
-    text-align: center;
+    padding: 2.5rem;
     box-shadow: var(--shadow-xl);
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+}
+
+/* Welcome Card */
+.welcome-card {
+    text-align: center;
+    justify-content: center;
 }
 
 .welcome-card h1 {
@@ -246,10 +263,7 @@ body {
 
 /* Assessment Card */
 .assessment-card {
-    background: var(--surface);
-    border-radius: var(--radius-xl);
-    padding: 2rem;
-    box-shadow: var(--shadow-xl);
+    justify-content: flex-start;
 }
 
 .category-header {
@@ -268,6 +282,7 @@ body {
     display: flex;
     align-items: center;
     justify-content: center;
+    flex-shrink: 0;
 }
 
 .category-number {
@@ -298,6 +313,7 @@ body {
     flex-direction: column;
     gap: 1.5rem;
     margin-bottom: 2rem;
+    flex: 1;
 }
 
 .skill-item {
@@ -391,6 +407,7 @@ body {
     justify-content: space-between;
     padding-top: 1.5rem;
     border-top: 1px solid var(--border);
+    margin-top: auto;
 }
 
 #prevBtn {
@@ -403,10 +420,7 @@ body {
 
 /* Results Screen */
 .results-container {
-    background: var(--surface);
-    border-radius: var(--radius-xl);
-    padding: 2rem;
-    box-shadow: var(--shadow-xl);
+    justify-content: flex-start;
 }
 
 .results-header {
@@ -425,10 +439,10 @@ body {
     color: var(--text-secondary);
 }
 
-/* Results Summary */
+/* Results Summary - 2x3 Responsive Grid */
 .results-summary {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    grid-template-columns: repeat(3, 1fr);
     gap: 1rem;
     margin-bottom: 2.5rem;
 }
@@ -465,7 +479,8 @@ body {
     font-weight: 600;
     color: var(--text-primary);
     margin-bottom: 0.25rem;
-    font-size: 0.95rem;
+    font-size: 0.9rem;
+    line-height: 1.3;
 }
 
 .summary-level {
@@ -506,9 +521,10 @@ body {
     margin-bottom: 1rem;
 }
 
+/* Recommendations - 3 Column Grid */
 .recommendations-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    grid-template-columns: repeat(3, 1fr);
     gap: 1rem;
 }
 
@@ -517,10 +533,12 @@ body {
     border: 1px solid rgba(79, 70, 229, 0.2);
     border-radius: var(--radius-lg);
     padding: 1.25rem;
+    display: flex;
+    flex-direction: column;
 }
 
 .recommendation-card h3 {
-    font-size: 1rem;
+    font-size: 0.95rem;
     font-weight: 600;
     color: var(--text-primary);
     margin-bottom: 0.5rem;
@@ -533,6 +551,7 @@ body {
     font-size: 0.875rem;
     color: var(--text-secondary);
     margin-bottom: 0.75rem;
+    flex: 1;
 }
 
 .recommendation-tag {
@@ -543,6 +562,7 @@ body {
     border-radius: 9999px;
     background: var(--primary);
     color: white;
+    align-self: flex-start;
 }
 
 /* Try It Section */
@@ -551,8 +571,8 @@ body {
 }
 
 .try-it-cards {
-    display: flex;
-    flex-direction: column;
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
     gap: 1rem;
 }
 
@@ -561,7 +581,7 @@ body {
     border-radius: var(--radius-lg);
     padding: 1.25rem;
     display: flex;
-    gap: 1rem;
+    flex-direction: column;
     align-items: flex-start;
 }
 
@@ -576,6 +596,11 @@ body {
     justify-content: center;
     flex-shrink: 0;
     box-shadow: var(--shadow-sm);
+    margin-bottom: 0.75rem;
+}
+
+.try-it-content {
+    flex: 1;
 }
 
 .try-it-content h4 {
@@ -604,24 +629,47 @@ body {
     padding-top: 1.5rem;
     border-top: 1px solid var(--border);
     flex-wrap: wrap;
+    margin-top: auto;
 }
 
-/* Footer */
+/* Footer - Sticky to bottom */
 .footer {
     text-align: center;
     padding: 1.5rem;
     color: rgba(255, 255, 255, 0.8);
     font-size: 0.875rem;
+    flex-shrink: 0;
+    margin-top: auto;
 }
 
 /* Responsive Design */
+
+/* Tablet - 2 column grids */
+@media (max-width: 800px) {
+    .results-summary {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    .recommendations-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    .try-it-cards {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+/* Mobile */
 @media (max-width: 640px) {
     .app-container {
         padding: 1rem;
     }
 
-    .welcome-card {
-        padding: 2rem 1.5rem;
+    .welcome-card,
+    .assessment-card,
+    .results-container {
+        padding: 1.5rem;
+        border-radius: var(--radius-lg);
     }
 
     .welcome-card h1 {
@@ -640,16 +688,26 @@ body {
         display: none;
     }
 
-    .assessment-card {
-        padding: 1.5rem;
-    }
-
-    .results-container {
-        padding: 1.5rem;
+    .results-summary {
+        grid-template-columns: 1fr;
     }
 
     .recommendations-grid {
         grid-template-columns: 1fr;
+    }
+
+    .try-it-cards {
+        grid-template-columns: 1fr;
+    }
+
+    .try-it-card {
+        flex-direction: row;
+        align-items: flex-start;
+        gap: 1rem;
+    }
+
+    .try-it-icon {
+        margin-bottom: 0;
     }
 
     .results-actions {
@@ -658,6 +716,15 @@ body {
 
     .results-actions .btn {
         width: 100%;
+    }
+
+    .category-header {
+        flex-direction: column;
+        text-align: center;
+    }
+
+    .category-info {
+        text-align: center;
     }
 }
 
@@ -678,5 +745,13 @@ body {
     .results-container {
         box-shadow: none;
         padding: 0;
+    }
+
+    .results-summary {
+        grid-template-columns: repeat(3, 1fr);
+    }
+
+    .recommendations-grid {
+        grid-template-columns: repeat(3, 1fr);
     }
 }
