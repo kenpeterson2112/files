@@ -1,0 +1,401 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Markdown Editor</title>
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            background: #1a1a2e;
+            color: #eee;
+        }
+
+        .toolbar {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 12px 20px;
+            background: #16213e;
+            border-bottom: 1px solid #0f3460;
+            flex-wrap: wrap;
+        }
+
+        .toolbar h1 {
+            font-size: 18px;
+            font-weight: 600;
+            margin-right: auto;
+            color: #e94560;
+        }
+
+        .toolbar button {
+            padding: 8px 16px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+            transition: all 0.2s;
+        }
+
+        .btn-copy {
+            background: #e94560;
+            color: white;
+        }
+
+        .btn-copy:hover {
+            background: #ff6b6b;
+        }
+
+        .btn-download {
+            background: #0f3460;
+            color: #eee;
+            border: 1px solid #e94560 !important;
+        }
+
+        .btn-download:hover {
+            background: #1a4a7a;
+        }
+
+        .btn-clear {
+            background: #333;
+            color: #aaa;
+        }
+
+        .btn-clear:hover {
+            background: #444;
+            color: #fff;
+        }
+
+        .container {
+            display: flex;
+            flex: 1;
+            overflow: hidden;
+        }
+
+        .pane {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            min-width: 0;
+        }
+
+        .pane-header {
+            padding: 10px 20px;
+            background: #16213e;
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: #888;
+            border-bottom: 1px solid #0f3460;
+        }
+
+        .editor-pane {
+            border-right: 2px solid #0f3460;
+        }
+
+        #editor {
+            flex: 1;
+            width: 100%;
+            padding: 20px;
+            border: none;
+            resize: none;
+            font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', 'Consolas', monospace;
+            font-size: 14px;
+            line-height: 1.6;
+            background: #1a1a2e;
+            color: #eee;
+            outline: none;
+            tab-size: 4;
+        }
+
+        #editor::placeholder {
+            color: #555;
+        }
+
+        #preview {
+            flex: 1;
+            padding: 20px;
+            overflow-y: auto;
+            background: #f8f9fa;
+            color: #333;
+        }
+
+        /* Markdown preview styles */
+        #preview h1, #preview h2, #preview h3, #preview h4, #preview h5, #preview h6 {
+            margin-top: 24px;
+            margin-bottom: 16px;
+            font-weight: 600;
+            line-height: 1.25;
+            color: #1a1a2e;
+        }
+
+        #preview h1:first-child, #preview h2:first-child, #preview h3:first-child {
+            margin-top: 0;
+        }
+
+        #preview h1 { font-size: 2em; border-bottom: 1px solid #eee; padding-bottom: 0.3em; }
+        #preview h2 { font-size: 1.5em; border-bottom: 1px solid #eee; padding-bottom: 0.3em; }
+        #preview h3 { font-size: 1.25em; }
+
+        #preview p {
+            margin-bottom: 16px;
+            line-height: 1.7;
+        }
+
+        #preview ul, #preview ol {
+            margin-bottom: 16px;
+            padding-left: 2em;
+        }
+
+        #preview li {
+            margin-bottom: 4px;
+        }
+
+        #preview li > ul, #preview li > ol {
+            margin-top: 4px;
+            margin-bottom: 4px;
+        }
+
+        #preview code {
+            background: #e9ecef;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-family: 'Monaco', 'Menlo', 'Consolas', monospace;
+            font-size: 0.9em;
+        }
+
+        #preview pre {
+            background: #1a1a2e;
+            color: #eee;
+            padding: 16px;
+            border-radius: 8px;
+            overflow-x: auto;
+            margin-bottom: 16px;
+        }
+
+        #preview pre code {
+            background: none;
+            padding: 0;
+            color: inherit;
+        }
+
+        #preview blockquote {
+            border-left: 4px solid #e94560;
+            margin: 0 0 16px 0;
+            padding: 0 16px;
+            color: #666;
+        }
+
+        #preview a {
+            color: #e94560;
+        }
+
+        #preview table {
+            border-collapse: collapse;
+            margin-bottom: 16px;
+            width: 100%;
+        }
+
+        #preview th, #preview td {
+            border: 1px solid #ddd;
+            padding: 8px 12px;
+            text-align: left;
+        }
+
+        #preview th {
+            background: #f1f3f4;
+        }
+
+        #preview img {
+            max-width: 100%;
+        }
+
+        #preview hr {
+            border: none;
+            border-top: 2px solid #eee;
+            margin: 24px 0;
+        }
+
+        .toast {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: #16213e;
+            color: #fff;
+            padding: 12px 24px;
+            border-radius: 8px;
+            border-left: 4px solid #e94560;
+            opacity: 0;
+            transform: translateY(20px);
+            transition: all 0.3s;
+            z-index: 1000;
+        }
+
+        .toast.show {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .container {
+                flex-direction: column;
+            }
+
+            .editor-pane {
+                border-right: none;
+                border-bottom: 2px solid #0f3460;
+            }
+
+            .pane {
+                flex: 1;
+                min-height: 40vh;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="toolbar">
+        <h1>Markdown Editor</h1>
+        <button class="btn-copy" onclick="copyMarkdown()">Copy Markdown</button>
+        <button class="btn-download" onclick="downloadMarkdown()">Download .md</button>
+        <button class="btn-clear" onclick="clearEditor()">Clear</button>
+    </div>
+
+    <div class="container">
+        <div class="pane editor-pane">
+            <div class="pane-header">Markdown</div>
+            <textarea id="editor" placeholder="Start typing your markdown here...
+
+# Heading 1
+## Heading 2
+
+**Bold text** and *italic text*
+
+- List item 1
+- List item 2
+
+> Blockquote
+
+`inline code`
+
+```
+code block
+```
+"></textarea>
+        </div>
+        <div class="pane preview-pane">
+            <div class="pane-header">Preview</div>
+            <div id="preview"></div>
+        </div>
+    </div>
+
+    <div class="toast" id="toast"></div>
+
+    <script>
+        const editor = document.getElementById('editor');
+        const preview = document.getElementById('preview');
+
+        // Configure marked
+        marked.setOptions({
+            breaks: true,
+            gfm: true
+        });
+
+        // Real-time preview update
+        function updatePreview() {
+            const markdown = editor.value;
+            preview.innerHTML = marked.parse(markdown);
+        }
+
+        editor.addEventListener('input', updatePreview);
+
+        // Copy markdown to clipboard
+        async function copyMarkdown() {
+            try {
+                await navigator.clipboard.writeText(editor.value);
+                showToast('Copied! Paste into ServiceCloud editor');
+            } catch (err) {
+                // Fallback for older browsers
+                editor.select();
+                document.execCommand('copy');
+                showToast('Copied! Paste into ServiceCloud editor');
+            }
+        }
+
+        // Download markdown file
+        function downloadMarkdown() {
+            const content = editor.value;
+            if (!content.trim()) {
+                showToast('Nothing to download');
+                return;
+            }
+            const blob = new Blob([content], { type: 'text/markdown' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'document.md';
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+            showToast('Downloaded document.md');
+        }
+
+        // Clear editor
+        function clearEditor() {
+            if (editor.value && !confirm('Clear all content?')) return;
+            editor.value = '';
+            updatePreview();
+            localStorage.removeItem('markdown-draft');
+        }
+
+        // Toast notification
+        function showToast(message) {
+            const toast = document.getElementById('toast');
+            toast.textContent = message;
+            toast.classList.add('show');
+            setTimeout(() => toast.classList.remove('show'), 2500);
+        }
+
+        // Handle tab key for indentation
+        editor.addEventListener('keydown', function(e) {
+            if (e.key === 'Tab') {
+                e.preventDefault();
+                const start = this.selectionStart;
+                const end = this.selectionEnd;
+                this.value = this.value.substring(0, start) + '    ' + this.value.substring(end);
+                this.selectionStart = this.selectionEnd = start + 4;
+                updatePreview();
+            }
+        });
+
+        // Save to localStorage on change
+        editor.addEventListener('input', () => {
+            localStorage.setItem('markdown-draft', editor.value);
+        });
+
+        // Restore from localStorage on load
+        const saved = localStorage.getItem('markdown-draft');
+        if (saved) {
+            editor.value = saved;
+            updatePreview();
+        }
+
+        // Initialize
+        updatePreview();
+    </script>
+</body>
+</html>
