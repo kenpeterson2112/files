@@ -77,6 +77,15 @@
             color: #fff;
         }
 
+        .btn-template {
+            background: #2d6a4f;
+            color: white;
+        }
+
+        .btn-template:hover {
+            background: #40916c;
+        }
+
         .container {
             display: flex;
             flex: 1;
@@ -269,6 +278,7 @@
 <body>
     <div class="toolbar">
         <h1>Markdown Editor</h1>
+        <button class="btn-template" onclick="loadTemplate()">Load Template</button>
         <button class="btn-copy" onclick="copyMarkdown()">Copy Markdown</button>
         <button class="btn-download" onclick="downloadMarkdown()">Download .md</button>
         <button class="btn-clear" onclick="clearEditor()">Clear</button>
@@ -368,6 +378,84 @@ code block
             toast.textContent = message;
             toast.classList.add('show');
             setTimeout(() => toast.classList.remove('show'), 2500);
+        }
+
+        // Article template
+        const articleTemplate = `# Article Title
+
+**MAIN CONTENT**
+
+Brief introduction explaining what this article covers and its purpose.
+
+![Image description](image-url)
+
+**Key Topics:**
+- Topic 1
+- Topic 2
+- Topic 3
+- Topic 4
+
+---
+
+## Topic 1 - [Related Article Title](link)
+
+Description of this topic.
+
+Key responsibilities/features:
+- Item 1
+- Item 2
+- Item 3
+
+---
+
+## Topic 2 - [Related Article Title](link)
+
+Description of this topic.
+
+---
+
+## Topic 3 - [Related Article Title](link)
+
+Description of this topic.
+
+---
+
+**TOOLS AND RESOURCES**
+
+List tools, web-links, files, price lists, and email templates for this topic.
+
+- [Resource 1](link)
+- [Resource 2](link)
+
+---
+
+**FAQs**
+
+**Q: Question 1?**
+A: Answer 1.
+
+**Q: Question 2?**
+A: Answer 2.
+
+---
+
+**GLOSSARY**
+
+| Term | Definition |
+|------|------------|
+| Term 1 | Definition 1 |
+| Term 2 | Definition 2 |
+`;
+
+        // Load template
+        function loadTemplate() {
+            if (editor.value.trim() && !confirm('This will replace your current content. Continue?')) {
+                return;
+            }
+            editor.value = articleTemplate;
+            updatePreview();
+            localStorage.setItem('markdown-draft', editor.value);
+            showToast('Template loaded!');
         }
 
         // Handle tab key for indentation
